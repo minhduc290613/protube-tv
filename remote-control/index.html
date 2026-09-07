@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ProTube — Điều khiển</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Nunito+Sans:wght@400;600;800&display=swap');
+
+  :root {
+    --bg: #14173A;
+    --surface: #1F2357;
+    --surface-2: #262B66;
+    --accent: #FFC94D;
+    --accent-2: #FF6F59;
+    --mint: #6FE7B0;
+    --text: #F5F3ED;
+    --text-dim: #B8BBDA;
+    --font-display: 'Baloo 2', sans-serif;
+    --font-body: 'Nunito Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    padding: 24px 20px 48px;
+    min-height: 100vh;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 26px;
+    color: var(--accent);
+    margin: 0 0 2px;
+  }
+
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin: 0 0 24px;
+  }
+
+  .card {
+    background: var(--surface);
+    border-radius: 20px;
+    padding: 18px 18px 20px;
+    margin-bottom: 18px;
+  }
+
+  .card h2 {
+    font-family: var(--font-body);
+    font-weight: 800;
+    font-size: 15px;
+    margin: 0 0 12px;
+    color: var(--text);
+  }
+
+  .status {
+    padding: 12px 14px;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 15px;
+    background: var(--surface-2);
+  }
+  .status.ok { color: var(--mint); }
+  .status.pending { color: var(--accent); }
+  .status.off { color: var(--accent-2); }
+
+  .preset-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .chip {
+    flex: 1 1 auto;
+    min-width: 60px;
+    text-align: center;
+    padding: 12px 0;
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--text);
+    font-weight: 800;
+    font-size: 15px;
+    border: 2px solid transparent;
+  }
+  .chip.is-selected {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  input[type="number"], input[type="text"], textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: none;
+    background: var(--surface-2);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+  textarea {
+    resize: vertical;
+    line-height: 1.4;
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin: 0 0 6px;
+  }
+
+  button {
+    width: 100%;
+    padding: 14px 0;
+    border-radius: 14px;
+    border: none;
+    font-family: var(--font-body);
+    font-weight: 800;
+    font-size: 15px;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+
+  .btn-primary { background: var(--accent); color: #1A1A1A; }
+  .btn-secondary { background: var(--surface-2); color: var(--text); }
+  .btn-danger { background: var(--accent-2); color: #1A1A1A; }
+
+  .hint {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: -4px;
+    margin-bottom: 14px;
+  }
+
+  code {
+    background: var(--surface-2);
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+  <h1>ProTube</h1>
+  <p class="subtitle">Trang điều khiển từ xa</p>
+
+  <div class="card">
+    <h2>Trạng thái</h2>
+    <div id="status" class="status">Đang tải…</div>
+  </div>
+
+  <div class="card">
+    <h2>Hẹn giờ "mất wifi"</h2>
+    <div class="preset-row" id="presets">
+      <div class="chip" data-mins="5">5 phút</div>
+      <div class="chip" data-mins="10">10 phút</div>
+      <div class="chip" data-mins="20">20 phút</div>
+      <div class="chip" data-mins="30">30 phút</div>
+    </div>
+    <label for="custom-mins">Hoặc nhập số phút tuỳ chọn</label>
+    <input type="number" id="custom-mins" min="1" placeholder="Ví dụ: 15" />
+    <button class="btn-primary" id="btn-schedule">Đặt hẹn giờ</button>
+    <button class="btn-secondary" id="btn-cancel">Huỷ hẹn giờ</button>
+    <button class="btn-danger" id="btn-now">Ngắt ngay</button>
+  </div>
+
+  <div class="card">
+    <h2>Cấu hình</h2>
+    <label for="playlist-id">Playlist ID (tuỳ chọn — điền thì ưu tiên đọc thẳng playlist này, bỏ trống thì dùng danh sách video bên dưới)</label>
+    <input type="text" id="playlist-id" placeholder="PLxxxxxxxxxxxxxxxxxxxxxxx" />
+    <div class="hint">Cách này cần đã deploy Edge Function <code>get-playlist</code> (xem HUONG-DAN-CHI-TIET.md). Playlist phải để Công khai hoặc Không công khai, không được Riêng tư.</div>
+    <label for="video-ids">Danh sách video (mỗi dòng 1 link hoặc mã video YouTube)</label>
+    <textarea id="video-ids" rows="5" placeholder="https://www.youtube.com/watch?v=XXXXXXXXXXX&#10;https://youtu.be/YYYYYYYYYYY"></textarea>
+    <label for="pin">Mã PIN dùng trên remote TV</label>
+    <input type="text" id="pin" placeholder="123" />
+    <div class="hint">Đổi PIN ở đây sẽ áp dụng cho cả trang này lẫn remote TV trong lần đồng bộ tiếp theo (khoảng 20 giây).</div>
+    <button class="btn-secondary" id="btn-save-config">Lưu cấu hình</button>
+  </div>
+
+  <div class="card">
+    <h2>Bản đặc biệt: làm mới qua YouTube Data API chính thức</h2>
+    <div class="hint">Dùng Playlist ID đã điền ở trên. Cần đã tạo API key trên Google Cloud Console và deploy Edge Function <code>sync-youtube-official</code> (xem HUONG-DAN-CHI-TIET.md, mục 3.4). Mỗi lần bấm chỉ tốn 1 unit quota — không tự động chạy lại, bấm khi nào muốn cập nhật thì bấm.</div>
+    <div id="cache-status" class="status" style="margin-bottom:14px;">Chưa làm mới lần nào</div>
+    <button class="btn-primary" id="btn-sync-official">🔄 Làm mới từ YouTube</button>
+    <button class="btn-secondary" id="btn-clear-cache">Xoá cache (quay lại đọc tự động)</button>
+  </div>
+
+<script src="config.js"></script>
+<script>
+  // Các giá trị bí mật được đọc từ config.js (không commit lên git —
+  // xem .gitignore). Copy config.example.js thành config.js rồi điền
+  // giá trị thật, DEVICE_ID phải giống hệt tv-app/js/config.js.
+  if (!window.APP_CONFIG) {
+    document.body.innerHTML =
+      '<div style="color:#fff;font-family:sans-serif;padding:40px;">' +
+      'Chưa có config.js — copy config.example.js thành config.js rồi ' +
+      'điền cấu hình thật trước khi mở trang này.</div>';
+    throw new Error('Thiếu config.js');
+  }
+  const { SUPABASE_URL, SUPABASE_ANON_KEY, DEVICE_ID } = window.APP_CONFIG;
+
+  const REFRESH_INTERVAL_MS = 10000;
+  let selectedMinutes = null;
+
+  const els = {
+    status: document.getElementById('status'),
+    presets: document.getElementById('presets'),
+    customMins: document.getElementById('custom-mins'),
+    btnSchedule: document.getElementById('btn-schedule'),
+    btnCancel: document.getElementById('btn-cancel'),
+    btnNow: document.getElementById('btn-now'),
+    playlistId: document.getElementById('playlist-id'),
+    videoIds: document.getElementById('video-ids'),
+    pin: document.getElementById('pin'),
+    btnSaveConfig: document.getElementById('btn-save-config'),
+    cacheStatus: document.getElementById('cache-status'),
+    btnSyncOfficial: document.getElementById('btn-sync-official'),
+    btnClearCache: document.getElementById('btn-clear-cache'),
+  };
+
+  async function supabaseGet(query) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    });
+    if (!res.ok) throw new Error(`GET lỗi: ${res.status}`);
+    return res.json();
+  }
+
+  async function supabasePatch(body) {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/devices?id=eq.${encodeURIComponent(DEVICE_ID)}`,
+      {
+        method: 'PATCH',
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify(body),
+      }
+    );
+    if (!res.ok) throw new Error(`PATCH lỗi: ${res.status}`);
+  }
+
+  function renderStatus(cfg) {
+    if (!cfg.disconnect_at) {
+      els.status.textContent = 'Đang phát bình thường';
+      els.status.className = 'status ok';
+      return;
+    }
+    const t = new Date(cfg.disconnect_at).getTime();
+    if (t > Date.now()) {
+      const mins = Math.max(1, Math.ceil((t - Date.now()) / 60000));
+      els.status.textContent = `Đã hẹn giờ, còn khoảng ${mins} phút nữa sẽ "mất wifi"`;
+      els.status.className = 'status pending';
+    } else {
+      els.status.textContent = 'Đang trong chế độ "mất wifi"';
+      els.status.className = 'status off';
+    }
+  }
+
+  async function refresh() {
+    try {
+      const rows = await supabaseGet(
+        `devices?id=eq.${encodeURIComponent(DEVICE_ID)}&select=video_ids,playlist_id,cached_videos,cached_videos_updated_at,pin,disconnect_at`
+      );
+      const cfg = rows[0];
+      if (!cfg) {
+        els.status.textContent = 'Không tìm thấy thiết bị — kiểm tra lại DEVICE_ID';
+        els.status.className = 'status off';
+        return;
+      }
+      renderStatus(cfg);
+      renderCacheStatus(cfg);
+      if (document.activeElement !== els.playlistId) els.playlistId.value = cfg.playlist_id || '';
+      if (document.activeElement !== els.videoIds) els.videoIds.value = cfg.video_ids || '';
+      if (document.activeElement !== els.pin) els.pin.value = cfg.pin || '';
+    } catch (e) {
+      els.status.textContent = 'Không kết nối được — kiểm tra mạng hoặc SUPABASE_URL/KEY';
+      els.status.className = 'status off';
+    }
+  }
+
+  function renderCacheStatus(cfg) {
+    const count = Array.isArray(cfg.cached_videos) ? cfg.cached_videos.length : 0;
+    if (!count) {
+      els.cacheStatus.textContent = 'Chưa làm mới lần nào — đang dùng cách đọc tự động';
+      els.cacheStatus.className = 'status';
+      return;
+    }
+    const t = cfg.cached_videos_updated_at ? new Date(cfg.cached_videos_updated_at) : null;
+    const timeStr = t ? t.toLocaleString('vi-VN') : '';
+    els.cacheStatus.textContent = `Đã cache ${count} video từ YouTube${timeStr ? ' — cập nhật lúc ' + timeStr : ''}`;
+    els.cacheStatus.className = 'status ok';
+  }
+
+  function selectPreset(mins) {
+    selectedMinutes = mins;
+    els.customMins.value = '';
+    [...els.presets.children].forEach((chip) =>
+      chip.classList.toggle('is-selected', Number(chip.dataset.mins) === mins)
+    );
+  }
+
+  els.presets.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    selectPreset(Number(chip.dataset.mins));
+  });
+
+  els.customMins.addEventListener('input', () => {
+    selectedMinutes = null;
+    [...els.presets.children].forEach((chip) => chip.classList.remove('is-selected'));
+  });
+
+  els.btnSchedule.addEventListener('click', async () => {
+    const mins = selectedMinutes || Number(els.customMins.value);
+    if (!mins || mins <= 0) {
+      alert('Chọn hoặc nhập số phút hợp lệ trước đã nhé.');
+      return;
+    }
+    const target = new Date(Date.now() + mins * 60000).toISOString();
+    await supabasePatch({ disconnect_at: target }).catch(() => alert('Lưu thất bại, thử lại.'));
+    refresh();
+  });
+
+  els.btnCancel.addEventListener('click', async () => {
+    await supabasePatch({ disconnect_at: null }).catch(() => alert('Lưu thất bại, thử lại.'));
+    refresh();
+  });
+
+  els.btnNow.addEventListener('click', async () => {
+    await supabasePatch({ disconnect_at: new Date().toISOString() }).catch(() =>
+      alert('Lưu thất bại, thử lại.')
+    );
+    refresh();
+  });
+
+  els.btnSaveConfig.addEventListener('click', async () => {
+    await supabasePatch({
+      video_ids: els.videoIds.value.trim(),
+      playlist_id: els.playlistId.value.trim() || null,
+      pin: els.pin.value.trim(),
+    }).catch(() => alert('Lưu thất bại, thử lại.'));
+    alert('Đã lưu cấu hình.');
+    refresh();
+  });
+
+  els.btnSyncOfficial.addEventListener('click', async () => {
+    const playlistId = els.playlistId.value.trim();
+    if (!playlistId) {
+      alert('Điền Playlist ID ở ô Cấu hình trước đã nhé.');
+      return;
+    }
+    els.btnSyncOfficial.disabled = true;
+    els.btnSyncOfficial.textContent = 'Đang làm mới…';
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/sync-youtube-official`, {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ device_id: DEVICE_ID, playlist_id: playlistId }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || 'Lỗi không rõ');
+      alert(`Đã lấy được ${data.count} video từ YouTube.`);
+    } catch (e) {
+      alert('Làm mới thất bại: ' + e.message + '\n\nKiểm tra đã deploy Edge Function và cấu hình YOUTUBE_API_KEY chưa (xem HUONG-DAN-CHI-TIET.md, mục 3.4).');
+    } finally {
+      els.btnSyncOfficial.disabled = false;
+      els.btnSyncOfficial.textContent = '🔄 Làm mới từ YouTube';
+      refresh();
+    }
+  });
+
+  els.btnClearCache.addEventListener('click', async () => {
+    await supabasePatch({ cached_videos: null, cached_videos_updated_at: null }).catch(() => {});
+    refresh();
+  });
+
+  refresh();
+  setInterval(refresh, REFRESH_INTERVAL_MS);
+</script>
+</body>
+</html>

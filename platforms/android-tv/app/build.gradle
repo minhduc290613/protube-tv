@@ -1,0 +1,52 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.protube.tv'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.protube.tv'
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.leanback:leanback:1.0.0'
+}
+
+// ------------------------------------------------------------
+// Copy nội dung ../../web-app (dùng chung với Tizen/webOS) vào
+// assets/web mỗi lần build, để không phải copy tay và không lệch
+// phiên bản giữa các nền tảng. Nếu Gradle version của bạn không ăn
+// task này, cứ copy tay thư mục web-app vào
+// app/src/main/assets/web/ rồi xoá task bên dưới.
+// ------------------------------------------------------------
+tasks.register('copyWebApp', Copy) {
+    from '../../web-app'
+    into 'src/main/assets/web'
+    exclude 'src/**', 'node_modules/**', 'package.json', 'package-lock.json',
+            'tsconfig.json', 'js/config.example.js'
+}
+tasks.named('preBuild') { dependsOn 'copyWebApp' }

@@ -1,0 +1,24 @@
+# Cấu hình thật — không bao giờ commit (chứa Supabase key, DEVICE_ID, YouTube API key)
+web-app/js/config.js
+remote-control/config.js
+
+# npm / TypeScript build
+node_modules/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# Tizen build artifacts
+.buildResult/
+*.wgt
+
+# webOS build artifacts
+*.ipk
+
+# Android build artifacts
+platforms/android-tv/.gradle/
+platforms/android-tv/build/
+platforms/android-tv/app/build/
+platforms/android-tv/local.properties
+platforms/android-tv/app/src/main/assets/web/

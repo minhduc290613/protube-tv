@@ -1,0 +1,13 @@
+{
+  "id": "com.protube.tv",
+  "version": "1.0.0",
+  "vendor": "Gia đình tự làm",
+  "type": "web",
+  "main": "index.html",
+  "title": "ProTube",
+  "icon": "icon.png",
+  "largeIcon": "icon.png",
+  "resolution": "1920x1080",
+  "iconColor": "#14173A",
+  "disableBackHistoryAPI": true
+}

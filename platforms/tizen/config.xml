@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  File này chỉ để THAM KHẢO. Khi bạn tạo project "Tizen Web Application"
+  mới trong VS Code, extension Tizen sẽ tự sinh ra config.xml riêng với
+  id/package hợp lệ theo chứng chỉ ký của bạn — đừng ghi đè toàn bộ file
+  đó. Chỉ cần copy 3 thứ dưới đây vào file config.xml thật của bạn:
+    1. <tizen:privilege name="http://tizen.org/privilege/internet"/>
+    2. <tizen:setting ... hwkey-event="enable" .../> (để bắt phím Back của remote)
+    3. <content src="index.html"/> trỏ đúng file chính
+
+  Nội dung app thật (index.html, css/, js/) nằm ở thư mục dùng chung
+  ../../web-app — copy toàn bộ nội dung thư mục đó (đã build js/app.js
+  và có sẵn js/config.js) vào project Tizen, đè lên file mẫu có sẵn.
+-->
+<widget xmlns="http://www.w3.org/ns/widgets"
+        xmlns:tizen="http://tizen.org/ns/widgets"
+        id="https://example.com/protube"
+        version="1.0.0"
+        viewmodes="maximized">
+  <tizen:application id="ProTube.ProTube" package="ProTube" required_version="6.0"/>
+  <content src="index.html"/>
+  <feature name="http://tizen.org/feature/screen.size.normal"/>
+  <icon src="icon.png"/>
+  <name>ProTube</name>
+  <tizen:privilege name="http://tizen.org/privilege/internet"/>
+  <tizen:setting screen-orientation="landscape"
+                 context-menu="disable"
+                 background-support="disable"
+                 encryption="disable"
+                 install-location="auto"
+                 hwkey-event="enable"/>
+</widget>
