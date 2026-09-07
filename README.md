@@ -2,7 +2,7 @@
 
 App YouTube playlist riêng cho trẻ em, chạy trên **Samsung Tizen / LG webOS / Android TV**, cùng dùng 1 bộ code web (TypeScript). Có tính năng hẹn giờ "mất wifi" giả (tại chỗ trên remote, hoặc từ xa qua điện thoại) để kết thúc giờ xem êm đẹp.
 
-**Hướng dẫn đầy đủ: [`HUONG-DAN-CHI-TIET.md`](./HUONG-DAN-CHI-TIET.md)** — kiến trúc, cách build, và các bước triển khai riêng cho từng nền tảng.
+**Hướng dẫn đầy đủ: [`help.md`](./help.md)** — kiến trúc, cách build, và các bước triển khai riêng cho từng nền tảng.
 
 ## Cấu trúc project
 
@@ -33,4 +33,4 @@ npm install && npm run build   # biên dịch TypeScript -> js/app.js
 python3 -m http.server 8080    # test ngay trên trình duyệt
 ```
 
-Chi tiết đầy đủ (Supabase, thêm video không cần API key Google, deploy Tizen/webOS/Android TV, bảo mật, xử lý sự cố) nằm hết trong [`HUONG-DAN-CHI-TIET.md`](./HUONG-DAN-CHI-TIET.md).
+Chi tiết đầy đủ (Supabase, thêm video không cần API key Google, deploy Tizen/webOS/Android TV, bảo mật, xử lý sự cố) nằm hết trong [`help.md`](./help.md).
