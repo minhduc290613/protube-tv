@@ -34,3 +34,7 @@ python3 -m http.server 8080    # test ngay trên trình duyệt
 ```
 
 Chi tiết đầy đủ (Supabase, thêm video không cần API key Google, deploy Tizen/webOS/Android TV, bảo mật, xử lý sự cố) nằm hết trong [`help.md`](./help.md).
+
+## License
+
+This project is licensed under the [MIT](LICENSE) license
