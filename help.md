@@ -207,7 +207,7 @@ Thấy sidebar mở/thu gọn mượt, hero + lưới video load được, hẹn
 
 ## 6. Triển khai lên Samsung Tizen
 
-1. **Bật Developer Mode trên TV**: mở app Store → gõ `1234` → chọn bật → TV khởi động lại → nhập IP máy tính vào ô hiện ra.
+1. **Bật Developer Mode trên TV**: mở app Store → gõ `12345` → chọn bật → TV khởi động lại → nhập IP máy tính vào ô hiện ra.
 2. Cài [VS Code](https://code.visualstudio.com/) + extension **Tizen**.
 3. Tạo project mới: **Create Project → Web Application → Basic/Empty**.
 4. Copy toàn bộ nội dung `web-app/` (gồm cả `js/config.js` đã điền — file này không có sẵn trong git nên phải tự tạo) vào project vừa tạo, đè lên file mẫu.
