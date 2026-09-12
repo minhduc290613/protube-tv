@@ -18,13 +18,19 @@
 //
 // Deploy + cấu hình: xem HUONG-DAN-CHI-TIET.md, mục 3.4.
 
-import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+export {};
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const deno = (globalThis as typeof globalThis & {
+  Deno: {
+    env: { get(name: string): string | undefined };
+    serve(handler: (request: Request) => Response | Promise<Response>): void;
+  };
+}).Deno;
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -33,7 +39,7 @@ function json(body: unknown, status = 200) {
   });
 }
 
-serve(async (req) => {
+deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -44,7 +50,7 @@ serve(async (req) => {
       return json({ error: 'Thiếu device_id hoặc playlist_id trong body' }, 400);
     }
 
-    const apiKey = Deno.env.get('YOUTUBE_API_KEY');
+    const apiKey = deno.env.get('YOUTUBE_API_KEY');
     if (!apiKey) {
       return json(
         { error: 'Server chưa cấu hình YOUTUBE_API_KEY — chạy: supabase secrets set YOUTUBE_API_KEY=xxxx' },
@@ -72,22 +78,33 @@ serve(async (req) => {
           it.snippet.thumbnails?.high?.url || it.snippet.thumbnails?.default?.url || '',
       }));
 
-    // Dùng service role key (biến môi trường Supabase tự cấp sẵn cho mọi
-    // Edge Function, không cần tự khai báo) để ghi thẳng vào bảng, bỏ
-    // qua RLS.
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
-    const { error } = await supabase
-      .from('devices')
-      .update({
-        cached_videos: videos,
-        cached_videos_updated_at: new Date().toISOString(),
-      })
-      .eq('id', device_id);
+    // Ghi qua REST API bằng service role key để bỏ qua RLS.
+    const supabaseUrl = deno.env.get('SUPABASE_URL');
+    const serviceRoleKey = deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !serviceRoleKey) {
+      return json({ error: 'Server chưa cấu hình Supabase URL hoặc service role key' }, 500);
+    }
 
-    if (error) return json({ error: error.message }, 500);
+    const updateRes = await fetch(
+      `${supabaseUrl}/rest/v1/devices?id=eq.${encodeURIComponent(device_id)}`,
+      {
+        method: 'PATCH',
+        headers: {
+          apikey: serviceRoleKey,
+          Authorization: `Bearer ${serviceRoleKey}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({
+          cached_videos: videos,
+          cached_videos_updated_at: new Date().toISOString(),
+        }),
+      }
+    );
+
+    if (!updateRes.ok) {
+      return json({ error: await updateRes.text() || 'Không thể cập nhật cache Supabase' }, updateRes.status);
+    }
 
     return json({ ok: true, count: videos.length });
   } catch (e) {

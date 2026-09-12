@@ -13,14 +13,18 @@
 // Playlist phải để "Công khai" hoặc "Không công khai" — không được
 // "Riêng tư", vì hàm này không đăng nhập bất kỳ tài khoản nào.
 //
-// Deploy: xem hướng dẫn trong HUONG-DAN-CHI-TIET.md, mục "Đọc thẳng playlist".
-
-import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
+// Deploy: xem hướng dẫn trong help.md, mục "Đọc thẳng playlist".
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const deno = (globalThis as typeof globalThis & {
+  Deno: {
+    serve(handler: (request: Request) => Response | Promise<Response>): void;
+  };
+}).Deno;
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -29,7 +33,7 @@ function json(body: unknown, status = 200) {
   });
 }
 
-serve(async (req) => {
+deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
