@@ -21,6 +21,7 @@ Mình không bàn chuyện kiểm soát trẻ em đúng-sai ở đây — đây 
 11. [Tuỳ biến thêm](#11-tuỳ-biến-thêm)
 12. [Bảo mật cần biết](#12-bảo-mật-cần-biết)
 13. [Xử lý sự cố](#13-xử-lý-sự-cố)
+14. [Bản dùng Firebase thay vì Supabase](#14-bản-dùng-firebase-thay-vì-supabase)
 
 ---
 
@@ -352,3 +353,86 @@ Kiểm tra WebView đã nhận focus (`webView.requestFocus()` đã gọi trong 
 
 **Đặt hẹn giờ từ điện thoại nhưng TV không nhận**
 Đợi tối đa 1 chu kỳ đồng bộ (20 giây). Kiểm tra TV có đang có mạng bình thường không.
+
+---
+
+## 14. Bản dùng Firebase thay vì Supabase
+
+Toàn bộ hướng dẫn ở trên dùng Supabase. Nếu muốn dùng **Firebase** thay vì Supabase (backend khác, cùng tính năng), thư mục `firebase-edition/` đã có sẵn bản tương đương — chọn 1 trong 2, không cần dùng cả hai song song.
+
+```
+firebase-edition/
+├── web-app/                  bản Firebase của web-app/ (giao diện y hệt, backend đổi sang Firestore)
+├── remote-control/           bản Firebase của remote-control/
+├── functions/                Cloud Functions (thay cho Supabase Edge Functions)
+│   ├── index.js               getPlaylist (đọc playlist, không cần API key) + syncYoutubeOfficial (bản đặc biệt)
+│   └── package.json
+├── firestore.rules           tương đương schema.sql + policy của Supabase
+├── firebase.json
+└── .firebaserc.example
+```
+
+**Lưu ý quan trọng**: Google cũng bắt buộc 2FA khi truy cập **Firebase Console** (cùng chính sách bảo mật tài khoản Google áp dụng từ giữa 2025, gồm cả Cloud Console, gcloud CLI lẫn Firebase Console) — nên nếu mục tiêu là né 2FA hoàn toàn thì Firebase không giúp được gì hơn Supabase. Bản này hợp lý nếu anh muốn dùng Firebase vì lý do khác (quen thuộc sẵn, không thích Postgres/SQL, đã có tài khoản Firebase...).
+
+### 14.1 Tạo project Firebase
+
+1. Vào [console.firebase.google.com](https://console.firebase.google.com), tạo project mới.
+2. Vào **Build → Firestore Database → Create database**, chọn **Start in production mode** (rules sẽ ghi đè ở bước dưới), chọn region.
+3. Vào **Project settings → General**, phần "Your apps" → bấm biểu tượng Web (`</>`) để đăng ký 1 web app — lấy `projectId` và `apiKey` trong đoạn cấu hình hiện ra.
+4. Tạo document đầu tiên: vào **Firestore Database → Start collection** → Collection ID: `devices` → Document ID: **một chuỗi ngẫu nhiên khó đoán** (đây là `DEVICE_ID`, giống hệt vai trò `id` bên bản Supabase) → thêm các field:
+   - `video_ids` (string) — mỗi dòng 1 link video
+   - `playlist_id` (string, để trống nếu chưa dùng)
+   - `pin` (string) — ví dụ `123`
+   - `disconnect_at` (để trống/null)
+
+### 14.2 Cài Firebase CLI và áp dụng Security Rules
+
+```bash
+npm install -g firebase-tools
+firebase login
+cd firebase-edition
+cp .firebaserc.example .firebaserc   # rồi sửa project id trong file .firebaserc
+firebase deploy --only firestore:rules
+```
+
+`firestore.rules` cho phép đọc/ghi công khai trên document `devices/{deviceId}` — bảo mật thật sự nằm ở việc `deviceId` là chuỗi khó đoán (đọc thêm ghi chú trong chính file `firestore.rules`).
+
+### 14.3 Deploy Cloud Functions (tuỳ chọn — chỉ cần nếu dùng đọc playlist hoặc bản đặc biệt)
+
+```bash
+cd firebase-edition/functions
+npm install
+cd ..
+firebase deploy --only functions
+```
+
+Deploy xong, CLI in ra URL của từng function, dạng gần giống:
+`https://getplaylist-xxxxxxxxxx-uc.a.run.app` và `https://syncyoutubeofficial-xxxxxxxxxx-uc.a.run.app`
+
+Copy đúng 2 URL này vào `GET_PLAYLIST_FUNCTION_URL` (trong `web-app/js/config.js`) và `SYNC_OFFICIAL_FUNCTION_URL` (trong `remote-control/config.js`).
+
+Muốn dùng "bản đặc biệt" (API chính thức), làm thêm bước lưu secret trước khi deploy:
+
+```bash
+firebase functions:secrets:set YOUTUBE_API_KEY
+```
+
+(CLI sẽ hỏi paste giá trị key — key này tạo trên Google Cloud Console, xem lại mục 3.4 phần "Các bước" bước 1, cách tạo giống hệt bản Supabase.)
+
+### 14.4 Điền cấu hình và chạy như bình thường
+
+1. `firebase-edition/web-app/js/config.example.js` → copy thành `config.js`, điền `FIREBASE_PROJECT_ID`, `FIREBASE_API_KEY`, `DEVICE_ID` (đúng document ID đã tạo ở 14.1), và `GET_PLAYLIST_FUNCTION_URL` nếu có dùng.
+2. `firebase-edition/remote-control/config.example.js` → copy thành `config.js`, điền tương tự + `SYNC_OFFICIAL_FUNCTION_URL` nếu có dùng.
+3. Từ đây các bước còn lại **giống hệt bản Supabase**: build TypeScript ([mục 4](#4-cài-nodejs-và-build-typescript)), test trên trình duyệt ([mục 5](#5-test-trên-trình-duyệt-trước-khi-lên-tv)), rồi deploy lên Tizen/webOS/Android TV ([mục 6](#6-triển-khai-lên-samsung-tizen)–[8](#8-triển-khai-lên-android-tv--google-tv)) — chỉ khác là copy nội dung từ `firebase-edition/web-app/` thay vì `web-app/`.
+
+### 14.5 Xử lý sự cố riêng cho bản Firebase
+
+**Lưới video trống, Console báo lỗi 403 khi gọi Firestore**
+Chưa deploy `firestore.rules`, hoặc deploy nhầm project (kiểm tra `.firebaserc`).
+
+**"Không tìm thấy thiết bị"**
+Document `devices/{DEVICE_ID}` chưa tồn tại, hoặc `DEVICE_ID` trong `config.js` gõ sai/lệch chữ hoa-thường so với Document ID thật trên Firestore.
+
+**Bấm "Làm mới từ YouTube" báo lỗi CORS hoặc 404**
+`SYNC_OFFICIAL_FUNCTION_URL` sai hoặc chưa deploy — chạy lại `firebase deploy --only functions` và copy đúng URL mới nhất từ output.
+

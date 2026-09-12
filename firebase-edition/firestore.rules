@@ -1,0 +1,15 @@
+rules_version = '2';
+
+// Không có đăng nhập/tài khoản trong app này — ai có đủ
+// FIREBASE_PROJECT_ID, FIREBASE_API_KEY, và DEVICE_ID đều đọc/ghi được
+// document tương ứng. FIREBASE_API_KEY vốn công khai (bình thường với
+// Firebase, không phải bí mật như Supabase anon key), nên lớp bảo vệ
+// thật sự nằm ở DEVICE_ID — dùng một chuỗi ngẫu nhiên đủ dài, khó đoán,
+// và đừng đăng file config.js đã điền giá trị thật lên nơi công khai.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /devices/{deviceId} {
+      allow read, write: if true;
+    }
+  }
+}

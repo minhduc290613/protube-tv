@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>ProTube</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- Thanh điều hướng bên trái: thu gọn chỉ còn icon, mở rộng khi được focus -->
+    <nav id="sidebar" class="sidebar">
+      <div class="sidebar__brand">
+        <div class="sidebar__brand-badge">😊</div>
+        <div class="sidebar__brand-name">ProTube</div>
+      </div>
+      <div id="sidebar-items" class="sidebar__items"></div>
+    </nav>
+
+    <!-- Khu vực nội dung chính -->
+    <main id="content" class="content">
+
+      <section id="screen-grid" class="screen is-active">
+        <header class="content-header">
+          <div class="content-header__eyebrow" id="content-eyebrow">Trang chủ</div>
+          <div class="content-header__welcome" id="content-welcome">Chào bé quay lại nè 👋</div>
+        </header>
+
+        <div id="loading-state" class="loading-state">
+          <div class="loading-state__spinner">🎬</div>
+          <div>Đang tải danh sách video…</div>
+        </div>
+
+        <div id="empty-state" class="empty-state" style="display:none;">
+          <div class="empty-state__emoji">📺</div>
+          <div>Chưa có video nào trong playlist. Nhờ ba mẹ thêm video nhé!</div>
+        </div>
+
+        <div id="content-body" style="display:none;">
+          <!-- Hero: video đầu tiên của playlist, làm nổi bật giống banner lớn -->
+          <div id="hero-card" class="hero-card">
+            <img id="hero-thumb" class="hero-card__thumb" src="" alt="" />
+            <div class="hero-card__scrim"></div>
+            <div class="hero-card__text">
+              <div class="hero-card__title" id="hero-title"></div>
+              <div class="hero-card__cta">▶ Xem ngay</div>
+            </div>
+          </div>
+
+          <div class="row-label">Đề xuất cho bé</div>
+          <div id="grid" class="grid"></div>
+        </div>
+      </section>
+
+      <section id="screen-player" class="screen">
+        <div class="player-wrap">
+          <div id="ytplayer-slot"></div>
+          <div class="player-hint">◀ Bấm Back để quay lại</div>
+        </div>
+      </section>
+
+      <section id="screen-offline" class="screen">
+        <div class="offline-screen">
+          <div class="offline-spinner"></div>
+          <div class="offline-text">Đang kết nối lại wifi…</div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

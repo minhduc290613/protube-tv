@@ -1,9 +1,17 @@
 # Cấu hình thật — không bao giờ commit (chứa Supabase key, DEVICE_ID, YouTube API key)
 web-app/js/config.js
 remote-control/config.js
+firebase-edition/web-app/js/config.js
+firebase-edition/remote-control/config.js
 
 # npm / TypeScript build
 node_modules/
+
+# Firebase
+firebase-edition/.firebaserc
+firebase-edition/.firebase/
+firebase-edition/firebase-debug*.log
+firebase-edition/functions/node_modules/
 
 # OS / editor
 .DS_Store
